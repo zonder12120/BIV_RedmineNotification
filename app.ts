@@ -2,11 +2,11 @@ import TelegramBot from "node-telegram-bot-api";
 import axios, { AxiosResponse } from "axios";
 import { Issue, IssueContent } from "./types";
 
-const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_URL, REDMINE_API_KEY } =
+const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_API_KEY, BASE_URL, TARGET_URL } =
   process.env;
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN as string, { polling: false });
-const request = `${REDMINE_URL}/issues.json?key=${REDMINE_API_KEY}&status_id=*&limit=500`;
+const request = `${BASE_URL}${TARGET_URL}/issues.json?key=${REDMINE_API_KEY}&status_id=*&limit=500`;
 
 let currentIssuesList: Issue[] = [];
 
@@ -65,7 +65,7 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
 }
 
 function notifyNewIssue(issue: Issue): void {
-  const message: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${REDMINE_URL}/issues/${issue.id}`;
+  const message: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
 }
 
@@ -74,12 +74,12 @@ function notifyStatusUpdate(issue: Issue, oldStatus: string): void {
     issue.id
   } изменён статус с: "${oldStatus}" на "${
     (issue.status as unknown as IssueContent).name
-  }"\n${REDMINE_URL}/issues/${issue.id}`;
+  }"\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
 }
 
 function notifyIssueUpdate(issue: Issue): void {
-  const message: string = `Обновление в задаче #${issue.id}\n${REDMINE_URL}/issues/${issue.id}`;
+  const message: string = `Обновление в задаче #${issue.id}\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
 }
 
