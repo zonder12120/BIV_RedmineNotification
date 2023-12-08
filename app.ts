@@ -7,7 +7,7 @@ const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_API_KEY, BASE_URL, TARGET_URL } =
   process.env;
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN as string, { polling: false });
-const request = `${BASE_URL}${TARGET_URL}/issues.json?key=${REDMINE_API_KEY}&status_id=*&limit=500`;
+const request = `${BASE_URL}${TARGET_URL}/issues.json?key=${REDMINE_API_KEY}&status_id!=5`;
 
 let currentIssuesList: Issue[] = [];
 
