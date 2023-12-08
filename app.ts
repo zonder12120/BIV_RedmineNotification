@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import axios, { AxiosResponse } from "axios";
 import { Issue, IssueContent } from "./types";
+import 'dotenv/config'
 
 const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_API_KEY, BASE_URL, TARGET_URL } =
   process.env;
