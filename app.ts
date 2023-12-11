@@ -1,7 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import axios, { AxiosResponse } from "axios";
 import { Issue, IssueContent } from "./types";
-import 'dotenv/config'
+import "dotenv/config";
 
 const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_API_KEY, BASE_URL, TARGET_URL } =
   process.env;
@@ -36,7 +36,7 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
       // Обнаружены изменения
       newIssuesList.forEach((issue: Issue) => {
         if (
-          !currentIssuesList.find(
+          !currentIssuesList.some(
             (currentIssue) => currentIssue.id === issue.id
           )
         ) {
@@ -66,7 +66,18 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
 }
 
 function notifyNewIssue(issue: Issue): void {
-  const message: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
+  const text: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
+  const status = (issue.priority as unknown as IssueContent).id;
+  let message = text;
+  if (status === 3) {
+    message = `<b>${text}</b>`;
+  }
+  if (status === 4) {
+    message = `<font color="red">${text}</font>`;
+  }
+  if (status === 5) {
+    message = `<font color="red"><b>${text}</b></font>`;
+  }
   bot.sendMessage(CHAT_ID as string, message);
 }
 
