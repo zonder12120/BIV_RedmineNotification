@@ -66,19 +66,17 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
 }
 
 function notifyNewIssue(issue: Issue): void {
-  const text: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
+  const message: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
   const status = (issue.priority as unknown as IssueContent).id;
-  let message = text;
   if (status === 3) {
-    message = `<b>${text}</b>`;
+    bot.sendMessage(CHAT_ID as string, "\u{1F7E6}" + message + "\u{1F7E6}", {parse_mode: "HTML"});
+  } else if (status === 4) {
+    bot.sendMessage(CHAT_ID as string, "\u{1F7E5}" + message + "\u{1F7E5}", {parse_mode: "HTML"});
+  } else if (status === 5) {
+    bot.sendMessage(CHAT_ID as string, "\u{2B1B}" + message + "\u{2B1B}", {parse_mode: "HTML"});
+  } else {
+    bot.sendMessage(CHAT_ID as string, message);
   }
-  if (status === 4) {
-    message = `<font color="red">${text}</font>`;
-  }
-  if (status === 5) {
-    message = `<font color="red"><b>${text}</b></font>`;
-  }
-  bot.sendMessage(CHAT_ID as string, message);
 }
 
 function notifyStatusUpdate(issue: Issue, oldStatus: string): void {
@@ -98,5 +96,8 @@ function notifyIssueUpdate(issue: Issue): void {
 initializeCurrentIssuesList().then(() => {
   setInterval(getRedmineUpdatesAndNotify, 60000);
   console.log("Бот запущен. Ожидание обновлений из Redmine.");
-  bot.sendMessage(CHAT_ID as string, "Бот успешно запущен и готов к работе!");
+  bot.sendMessage(
+    CHAT_ID as string,
+    "Бот успешно запущен и готов к работе!"
+  );
 });
