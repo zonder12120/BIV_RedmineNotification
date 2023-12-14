@@ -8,6 +8,7 @@ const { TELEGRAM_BOT_TOKEN, CHAT_ID, REDMINE_API_KEY, BASE_URL, TARGET_URL } =
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN as string, { polling: false });
 const request = `${BASE_URL}${TARGET_URL}/issues.json?key=${REDMINE_API_KEY}&status_id!=5`;
+const ignored = [71060];
 
 let currentIssuesList: Issue[] = [];
 
@@ -23,6 +24,13 @@ const dateChecker = () => {
   } else {
     return false;
   }
+};
+
+const ignoreFilter = (issue: Issue) => {
+  if (ignored.includes(issue.id as number)) {
+    return false;
+  }
+  return true;
 };
 
 async function initializeCurrentIssuesList(): Promise<void> {
@@ -49,7 +57,7 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
     if (JSON.stringify(currentIssuesList) !== JSON.stringify(newIssuesList)) {
       // Обнаружены изменения
       newIssuesList.forEach((issue: Issue) => {
-        if (dateChecker()) {
+        if (dateChecker() && ignoreFilter(issue)) {
           if (
             !currentIssuesList.some(
               (currentIssue) => currentIssue.id === issue.id
@@ -68,7 +76,9 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
             ) {
               notifyStatusUpdate(
                 issue,
-                ((currentIssue as Issue).status as unknown as IssueContent).name
+                ((currentIssue as Issue).status as unknown as IssueContent)
+                  .name,
+                (issue.assigned_to as unknown as IssueContent).name
               );
             } else if (
               (currentIssue as Issue).updated_on !== issue.updated_on
@@ -86,7 +96,11 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
 }
 
 function notifyNewIssue(issue: Issue): void {
-  const message: string = `Добавлена новая задача #${issue.id} - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
+  const message: string = `Добавлена задача #${issue.id}${
+    (issue.assigned_to as unknown as IssueContent).name
+      ? " для " + (issue.assigned_to as unknown as IssueContent).name + " "
+      : ""
+  } - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
   const status = (issue.priority as unknown as IssueContent).id;
   if (status === 3) {
     bot.sendMessage(CHAT_ID as string, "\u{1F7E6}" + message + "\u{1F7E6}", {
@@ -105,9 +119,13 @@ function notifyNewIssue(issue: Issue): void {
   }
 }
 
-function notifyStatusUpdate(issue: Issue, oldStatus: string): void {
-  const message: string = `В задаче #${
-    issue.id
+function notifyStatusUpdate(
+  issue: Issue,
+  oldStatus: string,
+  appointed: string | null
+): void {
+  const message: string = `В задаче #${issue.id}${
+    appointed ? " (" + appointed + ") " : ""
   } изменён статус с: "${oldStatus}" на "${
     (issue.status as unknown as IssueContent).name
   }"\n${BASE_URL}/issues/${issue.id}`;
@@ -115,7 +133,11 @@ function notifyStatusUpdate(issue: Issue, oldStatus: string): void {
 }
 
 function notifyIssueUpdate(issue: Issue): void {
-  const message: string = `Обновление в задаче #${issue.id}\n${BASE_URL}/issues/${issue.id}`;
+  const message: string = `Обновление в задаче #${issue.id}${
+    (issue.assigned_to as unknown as IssueContent).name
+      ? " (" + (issue.assigned_to as unknown as IssueContent).name + ") "
+      : ""
+  }\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
 }
 
@@ -123,5 +145,5 @@ initializeCurrentIssuesList().then(() => {
   setInterval(getRedmineUpdatesAndNotify, 60000);
   console.log("Бот запущен. Ожидание обновлений из Redmine.");
   bot.sendMessage(CHAT_ID as string, "Бот успешно запущен и готов к работе!");
-  dateChecker()
+  dateChecker();
 });
