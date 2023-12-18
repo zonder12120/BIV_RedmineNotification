@@ -23,8 +23,10 @@
         "списка",
         "статус",
         "успешно",
+        "codepaths",
         "Jornals",
         "REDMINE",
-        "redminenotificationbot"
+        "redminenotificationbot",
+        "tsbuildinfo"
     ]
 }

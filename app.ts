@@ -79,52 +79,6 @@ async function getCurrentIssuesJournal(id: number): Promise<Issue | void> {
   }
 }
 
-async function getRedmineUpdatesAndNotify(): Promise<void> {
-  try {
-    const response: AxiosResponse = await axios.get(request);
-    const newIssuesList = response.data.issues;
-
-    if (JSON.stringify(currentIssuesList) !== JSON.stringify(newIssuesList)) {
-      // Обнаружены изменения
-      newIssuesList.forEach((issue: Issue) => {
-        if (dateChecker() && ignoreFilter(issue)) {
-          if (
-            !currentIssuesList.some(
-              (currentIssue) => currentIssue.id === issue.id
-            )
-          ) {
-            notifyNewIssue(issue);
-          } else {
-            const currentIssue = currentIssuesList.find(
-              (currentIssue) => currentIssue.id === issue.id
-            );
-
-            if (
-              ((currentIssue as Issue).status as unknown as IssueContent)
-                .name !==
-              ((issue as Issue).status as unknown as IssueContent).name
-            ) {
-              notifyStatusUpdate(
-                issue,
-                ((currentIssue as Issue).status as unknown as IssueContent)
-                  .name,
-                (issue.assigned_to as unknown as IssueContent).name
-              );
-            } else if (
-              (currentIssue as Issue).updated_on !== issue.updated_on
-            ) {
-              checkNotes(currentIssue as Issue);
-            }
-          }
-        }
-      });
-      currentIssuesList = newIssuesList;
-    }
-  } catch (error) {
-    console.error("Ошибка при получении обновлений из Redmine:", error);
-  }
-}
-
 function notifyNewIssue(issue: Issue): void {
   const message: string = `Добавлена задача #${issue.id}${
     (issue.assigned_to as unknown as IssueContent).name &&
@@ -175,6 +129,58 @@ function notifyIssueUpdate(issue: Issue): void {
       : ""
   }\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
+}
+
+async function getRedmineUpdatesAndNotify(): Promise<void> {
+  try {
+    const response: AxiosResponse = await axios.get(request);
+    const newIssuesList = response.data.issues;
+
+    if (JSON.stringify(currentIssuesList) !== JSON.stringify(newIssuesList)) {
+      // Обнаружены изменения
+      newIssuesList.forEach((issue: Issue) => {
+        if (dateChecker() && ignoreFilter(issue)) {
+          if (
+            !currentIssuesList.some(
+              (currentIssue) => currentIssue.id === issue.id
+            )
+          ) {
+            notifyNewIssue(issue);
+          } else {
+            const currentIssue = currentIssuesList.find(
+              (currentIssue) => currentIssue.id === issue.id
+            );
+
+            if (
+              ((currentIssue as Issue).status as unknown as IssueContent)
+                .name !==
+              ((issue as Issue).status as unknown as IssueContent).name
+            ) {
+              notifyStatusUpdate(
+                issue,
+                ((currentIssue as Issue).status as unknown as IssueContent)
+                  .name,
+                (issue.assigned_to as unknown as IssueContent).name
+              );
+
+              if (
+                (currentIssue as Issue).updated_on !== issue.updated_on
+              ) {
+                checkNotes(currentIssue as Issue);
+              }
+            } else if (
+              (currentIssue as Issue).updated_on !== issue.updated_on
+            ) {
+              checkNotes(currentIssue as Issue);
+            }
+          }
+        }
+      });
+      currentIssuesList = newIssuesList;
+    }
+  } catch (error) {
+    console.error("Ошибка при получении обновлений из Redmine:", error);
+  }
 }
 
 initializeCurrentIssuesList().then(() => {
