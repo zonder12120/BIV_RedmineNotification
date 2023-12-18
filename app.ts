@@ -31,6 +31,14 @@ const ignoreFilter = (issue: Issue) => {
   return true;
 };
 
+const checkTracker = (tracker: IssueContent) => {
+  if (tracker.id === 4) {
+    return "\u{1F4B0}";
+  } else {
+    return "";
+  }
+};
+
 function checkNotes(issue: Issue): void {
   getCurrentIssuesJournal(issue.id as number).then((res: void | Issue) => {
     const issueWithJornals = res;
@@ -80,23 +88,29 @@ async function getCurrentIssuesJournal(id: number): Promise<Issue | void> {
 }
 
 function notifyNewIssue(issue: Issue): void {
-  const message: string = `Добавлена задача #${issue.id}${
+  const message: string = `${checkTracker(
+    issue.tracker as unknown as IssueContent
+  )}Добавлена задача #${issue.id}${
     (issue.assigned_to as unknown as IssueContent).name &&
     (issue.assigned_to as unknown as IssueContent).name !== ""
       ? " для " + (issue.assigned_to as unknown as IssueContent).name + " "
       : ""
   } - ${issue.subject}\n${BASE_URL}/issues/${issue.id}`;
   const status = (issue.priority as unknown as IssueContent).id;
-  if (status === 3) {
-    bot.sendMessage(CHAT_ID as string, "\u{1F7E2}" + message + "\u{1F7E2}", {
+  if (status === 2) {
+    bot.sendMessage(CHAT_ID as string, "\u{1F7E2}" + message, {
+      parse_mode: "HTML",
+    });
+  } else if (status === 3) {
+    bot.sendMessage(CHAT_ID as string, "\u{1F7E1}" + message, {
       parse_mode: "HTML",
     });
   } else if (status === 4) {
-    bot.sendMessage(CHAT_ID as string, "\u{1F7E1}" + message + "\u{1F7E1}", {
+    bot.sendMessage(CHAT_ID as string, "\u{1F534}" + message, {
       parse_mode: "HTML",
     });
   } else if (status === 5) {
-    bot.sendMessage(CHAT_ID as string, "\u{1F534}" + message + "\u{1F534}", {
+    bot.sendMessage(CHAT_ID as string, "\u{2B24}" + message, {
       parse_mode: "HTML",
     });
   } else {
@@ -110,19 +124,23 @@ function notifyStatusUpdate(
   appointed: string
 ): void {
   const message: string = `${
-    (issue.status as unknown as IssueContent).id === 1 ? "<u>" : ""
-  }В задаче #${issue.id}${
+    (issue.status as unknown as IssueContent).id === 2 ? "<u>" : ""
+  }${checkTracker(issue.tracker as unknown as IssueContent)}В задаче #${
+    issue.id
+  }${
     appointed ? " (" + appointed + ") " : ""
   } изменён статус с: "${oldStatus}" на "${
     (issue.status as unknown as IssueContent).name
   }"${
-    (issue.status as unknown as IssueContent).id === 1 ? "</u>" : ""
+    (issue.status as unknown as IssueContent).id === 2 ? "</u>" : ""
   }\n${BASE_URL}/issues/${issue.id}`;
   bot.sendMessage(CHAT_ID as string, message);
 }
 
 function notifyIssueUpdate(issue: Issue): void {
-  const message: string = `Обновление в задаче #${issue.id}${
+  const message: string = `${checkTracker(
+    issue.tracker as unknown as IssueContent
+  )}Обновление в задаче #${issue.id}${
     (issue.assigned_to as unknown as IssueContent).name &&
     (issue.assigned_to as unknown as IssueContent).name !== ""
       ? " (" + (issue.assigned_to as unknown as IssueContent).name + ") "
@@ -163,9 +181,7 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
                 (issue.assigned_to as unknown as IssueContent).name
               );
 
-              if (
-                (currentIssue as Issue).updated_on !== issue.updated_on
-              ) {
+              if ((currentIssue as Issue).updated_on !== issue.updated_on) {
                 checkNotes(currentIssue as Issue);
               }
             } else if (
