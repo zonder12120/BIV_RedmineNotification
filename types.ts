@@ -4,6 +4,10 @@ export interface IssueContent {
     value: string|null;
     }
     
-export interface Issue {
+export interface Journal {
     [key: string]: IssueContent[]|number|string|boolean|typeof Date|null;
+}
+    
+export interface Issue {
+    [key: string]: Journal[]|IssueContent[]|number|string|boolean|typeof Date|null;
 }
