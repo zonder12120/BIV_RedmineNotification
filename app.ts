@@ -52,7 +52,9 @@ function checkNotes(issue: Issue): void {
           1
       ];
       if ((lastComment.notes as string).length > 0) {
-        const message: string = `В задаче #${issue.id}${
+        const message: string = `${checkTracker(
+          issue.tracker as unknown as IssueContent
+        )}В задаче #${issue.id}${
           (issue.assigned_to as unknown as IssueContent).name &&
           (issue.assigned_to as unknown as IssueContent).name !== ""
             ? " (" + (issue.assigned_to as unknown as IssueContent).name + ") "
@@ -134,7 +136,9 @@ function notifyStatusUpdate(
   }"${
     (issue.status as unknown as IssueContent).id === 2 ? "</u>" : ""
   }\n${BASE_URL}/issues/${issue.id}`;
-  bot.sendMessage(CHAT_ID as string, message);
+  bot.sendMessage(CHAT_ID as string, '' + message, {
+    parse_mode: "HTML",
+  });
 }
 
 function notifyIssueUpdate(issue: Issue): void {
