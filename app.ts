@@ -11,7 +11,7 @@ const ignored = [71060];
 
 let weekend = false;
 let currentIssuesList: Issue[] = [];
-const missedIssuesList: Issue[] = [];
+let missedIssuesList: Issue[] = [];
 
 const dateChecker = () => {
   const date = Date.now();
@@ -62,6 +62,7 @@ function missedChecker() {
             CHAT_ID as string,
             "Доброе утро. За время вашего отсутствия были изменения в " + text
           );
+          missedIssuesList=[];
         }
       });
     });
