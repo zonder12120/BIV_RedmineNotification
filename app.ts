@@ -43,7 +43,6 @@ function missedChecker() {
     missedIssuesList.forEach((issue, index) => {
       let text = "";
       statusChecker(issue.id as number).then((res) => {
-
         if (
           res.status.id !== 3 &&
           res.status.id !== 5 &&
@@ -58,11 +57,14 @@ function missedChecker() {
           } else {
             text = `задачах: ${actualList.join(", ")}`;
           }
-          bot.sendMessage(
-            CHAT_ID as string,
-            "Доброе утро. За время вашего отсутствия были изменения в " + text
-          );
-          missedIssuesList=[];
+
+          if (actualList.length > 0) {
+            bot.sendMessage(
+              CHAT_ID as string,
+              "Доброе утро. За время вашего отсутствия были изменения в " + text
+            );
+          }
+          missedIssuesList = [];
         }
       });
     });
