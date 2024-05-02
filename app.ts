@@ -12,6 +12,14 @@ const ignored = [71060];
 let weekend = false;
 let currentIssuesList: Issue[] = [];
 let missedIssuesList: Issue[] = [];
+const helloMessage = "Бот успешно запущен и готов к работе!";
+const holidays = [
+  {
+    start: "05-09-2024",
+    end: "05-12-2024",
+  },
+];
+let hollidayStarted = false;
 
 const dateChecker = () => {
   const date = Date.now();
@@ -19,6 +27,25 @@ const dateChecker = () => {
   const day = newDate.getDay();
   const hour = newDate.getHours();
 
+  if (hollidayStarted) {
+    return false;
+  }
+  const hollidayStartedIndex = holidays.findIndex((i) => {
+    return newDate >= new Date(i.start) && newDate <= new Date(i.end);
+  });
+
+  if (hollidayStartedIndex !== -1) {
+    hollidayStarted = true;
+    const firstWorkDay = new Date(holidays[hollidayStartedIndex].end)
+    firstWorkDay.setDate(new Date(holidays[hollidayStartedIndex].end).getDate() + 1);
+    bot.sendMessage(
+      CHAT_ID as string,
+      "Всех с праздниками, до встречи " + firstWorkDay.toISOString().split("T")[0]
+    );
+  } else {
+    hollidayStarted = false;
+  }
+  
   if (day > 0 && day < 6 && hour < 20 && hour > 8) {
     return true;
   } else {
@@ -271,5 +298,5 @@ async function getRedmineUpdatesAndNotify(): Promise<void> {
 initializeCurrentIssuesList().then(() => {
   setInterval(getRedmineUpdatesAndNotify, 60000);
   console.log("Бот запущен. Ожидание обновлений из Redmine.");
-  bot.sendMessage(CHAT_ID as string, "Бот успешно запущен и готов к работе!");
+  bot.sendMessage(CHAT_ID as string, "" + helloMessage);
 });
