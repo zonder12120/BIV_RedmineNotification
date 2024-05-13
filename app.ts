@@ -26,26 +26,39 @@ const dateChecker = () => {
   const newDate = new Date(date);
   const day = newDate.getDay();
   const hour = newDate.getHours();
-
-  if (hollidayStarted) {
-    return false;
-  }
   const hollidayStartedIndex = holidays.findIndex((i) => {
     return newDate >= new Date(i.start) && newDate <= new Date(i.end);
   });
 
+  if (hollidayStarted && hollidayStartedIndex !== -1) {
+    return false;
+  }
+
   if (hollidayStartedIndex !== -1) {
     hollidayStarted = true;
-    const firstWorkDay = new Date(holidays[hollidayStartedIndex].end)
-    firstWorkDay.setDate(new Date(holidays[hollidayStartedIndex].end).getDate() + 1);
-    bot.sendMessage(
-      CHAT_ID as string,
-      "Всех с праздниками, до встречи " + firstWorkDay.toISOString().split("T")[0]
+    const firstWorkDay = new Date(holidays[hollidayStartedIndex].end);
+    firstWorkDay.setDate(
+      new Date(holidays[hollidayStartedIndex].end).getDate() + 1
     );
+    firstWorkDay.setMinutes(
+      firstWorkDay.getMinutes() - firstWorkDay.getTimezoneOffset()
+    );
+    const firstWorkDayString = firstWorkDay
+      .toISOString()
+      .split("T")[0]
+      .split("-")
+      .reverse()
+      .join("-");
+    setTimeout(() => {
+      bot.sendMessage(
+        CHAT_ID as string,
+        "Всех с праздниками, до встречи " + firstWorkDayString
+      );
+    }, 12 * 60 * 60 * 1000);
   } else {
     hollidayStarted = false;
   }
-  
+
   if (day > 0 && day < 6 && hour < 20 && hour > 8) {
     return true;
   } else {
