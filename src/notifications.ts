@@ -79,12 +79,12 @@ export async function notifyIssueUpdate(issue: Issue) {
 
 // Присылаем уведомление, если был добавлен коммент
 export function checkNotes(issue: Issue) {
-    getIssueJournals(issue.id as number).then(async (res: void | Issue) => {
+    getIssueJournals(issue.id).then(async (res: void | Issue) => {
         if (res) {
             const issueWithJournals = res;
 
             if (issueWithJournals.journals && issueWithJournals.journals.length > 0) {
-                const lastComment = issueWithJournals.journals.sort((a, b) => (a.id as number) - (b.id as number)).pop();
+                const lastComment = issueWithJournals.journals.sort((a, b) => (a.id) - (b.id as number)).pop();
                 if (lastComment && lastComment.notes && lastComment.notes.length > 0) {
                     const message: string = `${checkTracker(issue.tracker as IssueContent)}В задаче #${issue.id}${
                         issue.assigned_to && issue.assigned_to.name ? " (" + (issue.assigned_to as IssueContent).name + ") " : ""

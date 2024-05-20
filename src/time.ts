@@ -30,7 +30,7 @@ export async function isWorkTime(date: number): Promise<boolean> {
     return !(day === 0 ||      // Воскресенье
              day === 6 ||      // Суббота
              await isHoliday(newDate.toISOString().split("T")[0]) ||
-             !(hour >= 8 && hour <= 20));
+             !(hour >= 9 && hour <= 19));
 }
 
 // Получаем текущее время в формате "DD.MM.YYYY HH:MM:SS"

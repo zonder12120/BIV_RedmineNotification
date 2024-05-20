@@ -33,32 +33,39 @@ async function main(): Promise<void> {
         for (const issue of getCurrentIssuesList()) {
             if (!newIssuesMap.has(issue.id)) {
                 if (ignoreFilter(issue)) {
-
-                    await isWorkTime(now)
-                        ? await notifyNewIssue(issue)
-                        : addIssueInOffTime(issue);
+                    if (await isWorkTime(now)) {
+                        await notifyNewIssue(issue)
+                    } else if (!getMissedIssuesList().includes(issue)) {
+                        addIssueInOffTime(issue)
+                    }
                 }
             } else {
                 const currentIssue = newIssuesMap.get(issue.id);
 
                 if (currentIssue && currentIssue.status.name !== issue.status.name) {
-                    await isWorkTime(now)
-                        ? await notifyStatusUpdate(
+                    if (await isWorkTime(now)) {
+                        await notifyStatusUpdate(
                             issue,
                             (currentIssue.status as unknown as IssueContent).name,
                             (issue.assigned_to as unknown as IssueContent).name
                         )
-                        : addIssueInOffTime(issue);
+                    } else if (!getMissedIssuesList().includes(issue)) {
+                        addIssueInOffTime(issue)
+                    }
 
                     if ((currentIssue.updated_on as string) !== issue.updated_on) {
-                        await isWorkTime(now)
-                            ? checkNotes(currentIssue)
-                            : addIssueInOffTime(issue);
+                        if (await isWorkTime(now)) {
+                            checkNotes(currentIssue)
+                        } else if (!getMissedIssuesList().includes(issue)) {
+                            addIssueInOffTime(issue)
+                        }
                     }
                 } else if (currentIssue && (currentIssue.updated_on as string) !== issue.updated_on) {
-                    await isWorkTime(now)
-                        ? checkNotes(currentIssue)
-                        : addIssueInOffTime(issue);
+                    if (await isWorkTime(now)) {
+                        checkNotes(currentIssue)
+                    } else if (!getMissedIssuesList().includes(issue)) {
+                        addIssueInOffTime(issue)
+                    }
                 }
             }
         }
@@ -73,7 +80,7 @@ async function main(): Promise<void> {
 function addIssueInOffTime(issue: Issue) {
     try {
         addMissedIssue(issue);
-        console.log(`Во вне рабочее время добавлена задача ${issue.id} ${getCurrentTime()}`);
+        console.log(`Во вне рабочее время изменения по задаче: ${issue.id} ${getCurrentTime()}`);
     } catch (error) {
         console.log(`При добавлении задачи во вне рабочее время произошла ошибка: ${error} ${getCurrentTime()}`);
     }

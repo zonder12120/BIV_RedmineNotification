@@ -13,10 +13,6 @@ export function getMissedIssuesList() {
     return missedIssuesList;
 }
 
-export function getCurrentIssuesList() {
-    return currentIssuesList;
-}
-
 export function addMissedIssue(issue: Issue) {
     missedIssuesList.push(issue);
 }
@@ -25,12 +21,16 @@ export function clearMissedIssues(){
     missedIssuesList = [];
 }
 
+export function getCurrentIssuesList() {
+    return currentIssuesList;
+}
+
 export function assignCurrentIssuesList(issueslist: Issue[]): void {
     currentIssuesList = issueslist;
 }
 
 // Отфильтровываем задачи, которые мы добавили в список
-export const ignoreFilter = (issue: Issue) => !ignored.includes(issue.id as number);
+export const ignoreFilter = (issue: Issue) => !ignored.includes(issue.id);
 
 // Инициализируем список всех задач
 export async function initializeCurrentIssuesList(): Promise<void> {
