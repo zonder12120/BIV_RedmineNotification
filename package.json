@@ -1,6 +1,6 @@
 {
   "name": "biv_redminenotificationbot",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/app.js",
   "scripts": {
