@@ -42,7 +42,7 @@ async function main(): Promise<void> {
             }
         }
         assignCurrentIssuesList(newIssuesList);
-        // console.log(JSON.stringify(getCurrentIssuesList()));
+        console.log(JSON.stringify(getCurrentIssuesList()));
         console.log(`Запрос обновлений ${getCurrentTime()}`)
     } catch (error) {
         console.error(`Ошибка при получении обновлений из Redmine: ${error} ${getCurrentTime()}`);

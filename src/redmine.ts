@@ -6,8 +6,16 @@ import {getCurrentTime} from "./time";
 const ignored = [71060]; // Игнорим задачу 71060, т.к. обновления по ней нас не волнуют, она создана для ведения учёта остальных задач
 const issuesListRequest = `${Config.BASE_URL}/issues.json?key=${Config.REDMINE_API_KEY}&status_id!=5`;
 
-let missedIssuesList: Issue[] = [];
 let currentIssuesList: Issue[] = [];
+let missedIssuesList: Issue[] = [];
+
+export function getCurrentIssuesList() {
+    return currentIssuesList;
+}
+
+export function assignCurrentIssuesList(issueslist: Issue[]): void {
+    currentIssuesList = issueslist;
+}
 
 export function getMissedIssuesList() {
     return missedIssuesList;
@@ -19,14 +27,6 @@ export function addMissedIssue(issue: Issue) {
 
 export function clearMissedIssues(){
     missedIssuesList = [];
-}
-
-export function getCurrentIssuesList() {
-    return currentIssuesList;
-}
-
-export function assignCurrentIssuesList(issueslist: Issue[]): void {
-    currentIssuesList = issueslist;
 }
 
 // Отфильтровываем задачи, которые мы добавили в список
