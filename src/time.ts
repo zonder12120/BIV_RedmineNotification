@@ -9,7 +9,11 @@ async function fetchHolidays(): Promise<string[]> {
     try {
         const response: AxiosResponse<{ items: Holiday[] }> = await axios.get(calendarUrl);
         const datesList = response.data.items.map((item) => item.start.date)
+
+        // Логирование для отладки
+        // console.log('\nПолученные праздники');
         // console.log(datesList);
+
         return datesList;
     } catch (error) {
         console.error(`Ошибка при получении праздников: ${error} ${getCurrentTime()}`);

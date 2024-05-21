@@ -1,20 +1,19 @@
-import axios, {AxiosResponse} from "axios";
-import {Issue, IssueContent} from "./types";
 import "dotenv/config";
+import axios from "axios";
+import {Issue} from "./types";
+import {sendMessage} from "./telegram";
 import {getCurrentTime, isWorkTime} from "./time";
 import {
+    isIgnore,
     addMissedIssue,
-    assignCurrentIssuesList,
-    getCurrentIssuesList,
-    ignoreFilter,
+    issuesListRequest,
+    getMissedIssuesList,
+    getCurrentIssuesMap,
+    assignCurrentIssuesMap,
     initializeCurrentIssuesList,
-    getMissedIssuesList
 } from "./redmine";
 import {checkNotes, delayedNotifications, notifyNewIssue, notifyStatusUpdate} from "./notifications";
-import {Config} from "./config";
-import {sendMessage} from "./telegram";
 
-const issuesListRequest = `${Config.BASE_URL}/issues.json?key=${Config.REDMINE_API_KEY}&status_id!=5`;
 const helloMessage = "Бот запущен!";
 
 async function main(): Promise<void> {
@@ -24,26 +23,31 @@ async function main(): Promise<void> {
         await delayedNotifications();
     }
 
+    // Сравнение списков задач на наличие изменений
     try {
-        const response: AxiosResponse = await axios.get(issuesListRequest);
-        const newIssuesList = response.data.issues;
+        const response = (await axios.get(issuesListRequest)).data.issues;
 
-        // Сравнение списков задач на наличие изменений
-        const newIssuesMap: Map<number, Issue> = new Map(newIssuesList.map((issue: Issue) => [issue.id, issue]));
-        for (const issue of getCurrentIssuesList()) {
-            const currentIssue = newIssuesMap.get(issue.id);
+        const newIssuesMap: Map<number, Issue> = new Map(response.map((issue: Issue) => [issue.id, issue]));
 
-            if (!currentIssue) {
-                if (ignoreFilter(issue)) {
-                    await processNewIssue(issue, now);
+        const oldIssuesMap = getCurrentIssuesMap();
+
+        console.log(`\nСравнение нового списка с инициализированным ранее ${getCurrentTime()}`);
+        // Логирование для отладки
+        // console.log(newIssuesMap);
+
+        for (const [id, newIssue] of newIssuesMap) {
+
+            const oldIssue = oldIssuesMap.get(id);
+
+            if (!oldIssue) {
+                if (!isIgnore(newIssue)) {
+                    await processNewIssue(newIssue, now);
                 }
-            } else if (currentIssue.status.name !== issue.status.name || currentIssue.updated_on !== issue.updated_on) {
-                await processIssueUpdate(issue, currentIssue, now);
+            } else if (newIssue.status.name !== oldIssue?.status.name || newIssue.updated_on !== oldIssue?.updated_on) {
+                await processIssueUpdate(oldIssue, newIssue, now);
             }
         }
-        assignCurrentIssuesList(newIssuesList);
-        console.log(JSON.stringify(getCurrentIssuesList()));
-        console.log(`Запрос обновлений ${getCurrentTime()}`)
+        assignCurrentIssuesMap(newIssuesMap);
     } catch (error) {
         console.error(`Ошибка при получении обновлений из Redmine: ${error} ${getCurrentTime()}`);
     }
@@ -57,18 +61,21 @@ async function processNewIssue(issue: Issue, now: number) {
     }
 }
 
-async function processIssueUpdate(currentIssue: Issue, issue: Issue, now: number) {
-    const oldStatus = (currentIssue.status as unknown as IssueContent).name;
-    const appointed = (issue.assigned_to as unknown as IssueContent).name;
+async function processIssueUpdate(oldIssue: Issue, newIssue: Issue, now: number) {
+    const oldStatus = oldIssue.status.name;
+    const newStatus = newIssue.status.name;
+    const appointed = newIssue.assigned_to?.name;
 
     if (await isWorkTime(now)) {
-        await notifyStatusUpdate(issue, oldStatus, appointed);
-        if (currentIssue.updated_on !== issue.updated_on) {
-            checkNotes(currentIssue);
+        if (oldStatus !== newStatus) {
+            await notifyStatusUpdate(newIssue, oldStatus, appointed);
+        }
+        if (oldIssue.updated_on !== newIssue.updated_on) {
+            checkNotes(newIssue);
         }
     } else {
-        if (!getMissedIssuesList().includes(issue)) {
-            addIssueInOffTime(issue);
+        if (!getMissedIssuesList().includes(newIssue)) {
+            addIssueInOffTime(newIssue);
         }
     }
 }
@@ -83,7 +90,7 @@ function addIssueInOffTime(issue: Issue) {
 }
 
 initializeCurrentIssuesList().then(async () => {
-    setInterval(main, 60000);
-    console.log(`Бот запущен ${getCurrentTime()}`);
+    console.log(`${helloMessage} ${getCurrentTime()}`);
     await sendMessage(helloMessage);
+    setInterval(main, 60000);
 });
