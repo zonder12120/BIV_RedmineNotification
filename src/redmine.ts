@@ -4,10 +4,18 @@ import {Issue} from "./types";
 import {getCurrentTime} from "./time";
 
 const ignored = [71060]; // Игнорим задачу 71060, т.к. обновления по ней нас не волнуют, она создана для ведения учёта остальных задач
-const issuesListRequest = `${Config.BASE_URL}/issues.json?key=${Config.REDMINE_API_KEY}&status_id!=5`;
+export const issuesListRequest = `${Config.BASE_URL}/issues.json?key=${Config.REDMINE_API_KEY}&status_id!=5`;
 
+let currentIssuesMap: Map<number, Issue>;
 let missedIssuesList: Issue[] = [];
-let currentIssuesList: Issue[] = [];
+
+export function getCurrentIssuesMap() {
+    return currentIssuesMap;
+}
+
+export function assignCurrentIssuesMap(newIssuesMap: Map<number, Issue>) {
+    currentIssuesMap = newIssuesMap;
+}
 
 export function getMissedIssuesList() {
     return missedIssuesList;
@@ -21,22 +29,18 @@ export function clearMissedIssues(){
     missedIssuesList = [];
 }
 
-export function getCurrentIssuesList() {
-    return currentIssuesList;
-}
-
-export function assignCurrentIssuesList(issueslist: Issue[]): void {
-    currentIssuesList = issueslist;
-}
-
 // Отфильтровываем задачи, которые мы добавили в список
-export const ignoreFilter = (issue: Issue) => !ignored.includes(issue.id);
+export const isIgnore = (issue: Issue) => ignored.includes(issue.id);
 
 // Инициализируем список всех задач
 export async function initializeCurrentIssuesList(): Promise<void> {
     try {
-        const response: AxiosResponse = await axios.get(issuesListRequest);
-        currentIssuesList = response.data.issues;
+        const response = (await axios.get(issuesListRequest)).data.issues;
+        currentIssuesMap = new Map(response.map((issue: Issue) => [issue.id, issue]));
+
+        console.log(`\nИнициализация списка для сравнения ${getCurrentTime()}`);
+        // Логирование для отладки
+        //console.log(currentIssuesMap);
     } catch (error) {
         console.error(`Ошибка при инициализации списка задач из Redmine: ${error} ${getCurrentTime()}`);
     }

@@ -33,10 +33,10 @@ export async function delayedNotifications() {
 
 // Уведомление о новой задаче
 export async function notifyNewIssue(issue: Issue) {
-    const message: string = `${checkTracker(issue.tracker as IssueContent)}Добавлена задача #${issue.id}${
-        issue.assigned_to && issue.assigned_to.name ? " для " + (issue.assigned_to as IssueContent).name + " " : ""
+    const message: string = `${checkTracker(issue.tracker)}Добавлена задача #${issue.id}${
+        issue.assigned_to && issue.assigned_to.name ? " для " + (issue.assigned_to).name + " " : ""
     } - ${issue.subject}\n${Config.BASE_URL}/issues/${issue.id}`;
-    const status = (issue.priority as IssueContent).id;
+    const status = (issue.priority).id;
 
     const statusIcons: Record<number, string> = {
         2: "\u{1F7E2}", // 🟢 - 3 приоритет
@@ -56,8 +56,8 @@ export async function notifyNewIssue(issue: Issue) {
 const checkTracker = (tracker: IssueContent) => (tracker.id === 4 ? "\u{1F4B0}" : "");
 
 // Оповещение об изменении статуса задачи
-export async function notifyStatusUpdate(issue: Issue, oldStatus: string, appointed: string) {
-    const message: string = `${issue.status.id === 2 ? "<u>" : ""}${checkTracker(issue.tracker as IssueContent)}В задаче #${
+export async function notifyStatusUpdate(issue: Issue, oldStatus: string, appointed: string | undefined) {
+    const message: string = `${issue.status.id === 2 ? "<u>" : ""}${checkTracker(issue.tracker)}В задаче #${
         issue.id
     }${appointed ? " (" + appointed + ") " : ""} изменён статус с: "${oldStatus}" на "${issue.status.name}"${
         issue.status.id === 2 ? "</u>" : ""
@@ -70,7 +70,7 @@ export async function notifyStatusUpdate(issue: Issue, oldStatus: string, appoin
 
 // Оповещение об изменениях в задаче
 export async function notifyIssueUpdate(issue: Issue) {
-    const message: string = `${checkTracker(issue.tracker as IssueContent)}Обновление в задаче #${issue.id}${
+    const message: string = `${checkTracker(issue.tracker)}Обновление в задаче #${issue.id}${
         issue.assigned_to && issue.assigned_to.name ? " (" + issue.assigned_to.name + ") " : ""
     }\n${Config.BASE_URL}/issues/${issue.id}`;
     await sendMessage(message);
@@ -84,10 +84,10 @@ export function checkNotes(issue: Issue) {
             const issueWithJournals = res;
 
             if (issueWithJournals.journals && issueWithJournals.journals.length > 0) {
-                const lastComment = issueWithJournals.journals.sort((a, b) => (a.id) - (b.id as number)).pop();
+                const lastComment = issueWithJournals.journals.sort((a, b) => (a.id) - (b.id)).pop();
                 if (lastComment && lastComment.notes && lastComment.notes.length > 0) {
-                    const message: string = `${checkTracker(issue.tracker as IssueContent)}В задаче #${issue.id}${
-                        issue.assigned_to && issue.assigned_to.name ? " (" + (issue.assigned_to as IssueContent).name + ") " : ""
+                    const message: string = `${checkTracker(issue.tracker)}В задаче #${issue.id}${
+                        issue.assigned_to && issue.assigned_to.name ? " (" + (issue.assigned_to).name + ") " : ""
                     } добавлен комментарий: ${lastComment.notes}\n${Config.BASE_URL}/issues/${issue.id}`;
                     await sendMessage(message);
                     console.log(message);

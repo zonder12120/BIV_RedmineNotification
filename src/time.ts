@@ -2,13 +2,19 @@ import axios, { AxiosResponse } from "axios";
 import { Holiday } from "./types";
 import {Config} from "./config";
 
-const calendarUrl = `https://clients6.google.com/calendar/v3/calendars/en.russian%23holiday@group.v.calendar.google.com/events?calendarId=en.russian%23holiday%40group.v.calendar.google.com&singleEvents=true&eventTypes=default&eventTypes=focusTime&eventTypes=outOfOffice&timeZone=Z&maxAttendees=1&maxResults=250&sanitizeHtml=true&timeMin=2024-01-01T00%3A00%3A00Z&timeMax=2025-01-01T00%3A00%3A00Z&key=${Config.GOOGLE_CALENDAR_KEY}`;
+const calendarUrl = `https://clients6.google.com/calendar/v3/calendars/en.russian%23holiday@group.v.calendar.google.com/events?calendarId=en.russian%23holiday%40group.v.calendar.google.com&singleEvents=true&eventTypes=default&eventTypes=focusTime&eventTypes=outOfOffice&timeZone=Z&maxAttendees=1&maxResults=250&sanitizeHtml=true&timeMin=${getCurrentYear()}-01-01T00%3A00%3A00Z&timeMax=${getCurrentYear() + 1}-01-01T00%3A00%3A00Z&key=${Config.GOOGLE_CALENDAR_KEY}`;
 
 // Получаем по ссылке JSON с праздниками
 async function fetchHolidays(): Promise<string[]> {
     try {
         const response: AxiosResponse<{ items: Holiday[] }> = await axios.get(calendarUrl);
-        return response.data.items.map((item) => item.start.date);
+        const datesList = response.data.items.map((item) => item.start.date)
+
+        // Логирование для отладки
+        // console.log('\nПолученные праздники');
+        // console.log(datesList);
+
+        return datesList;
     } catch (error) {
         console.error(`Ошибка при получении праздников: ${error} ${getCurrentTime()}`);
         return [];
@@ -43,4 +49,8 @@ export function getCurrentTime(): string {
         minute: '2-digit',
         second: '2-digit',
     }).format(new Date());
+}
+
+export function getCurrentYear() {
+    return new Date().getFullYear();
 }
