@@ -31,42 +31,14 @@ async function main(): Promise<void> {
         // Сравнение списков задач на наличие изменений
         const newIssuesMap: Map<number, Issue> = new Map(newIssuesList.map((issue: Issue) => [issue.id, issue]));
         for (const issue of getCurrentIssuesList()) {
-            if (!newIssuesMap.has(issue.id)) {
+            const currentIssue = newIssuesMap.get(issue.id);
+
+            if (!currentIssue) {
                 if (ignoreFilter(issue)) {
-                    if (await isWorkTime(now)) {
-                        await notifyNewIssue(issue)
-                    } else if (!getMissedIssuesList().includes(issue)) {
-                        addIssueInOffTime(issue)
-                    }
+                    await processNewIssue(issue, now);
                 }
-            } else {
-                const currentIssue = newIssuesMap.get(issue.id);
-
-                if (currentIssue && currentIssue.status.name !== issue.status.name) {
-                    if (await isWorkTime(now)) {
-                        await notifyStatusUpdate(
-                            issue,
-                            (currentIssue.status as unknown as IssueContent).name,
-                            (issue.assigned_to as unknown as IssueContent).name
-                        )
-                    } else if (!getMissedIssuesList().includes(issue)) {
-                        addIssueInOffTime(issue)
-                    }
-
-                    if ((currentIssue.updated_on as string) !== issue.updated_on) {
-                        if (await isWorkTime(now)) {
-                            checkNotes(currentIssue)
-                        } else if (!getMissedIssuesList().includes(issue)) {
-                            addIssueInOffTime(issue)
-                        }
-                    }
-                } else if (currentIssue && (currentIssue.updated_on as string) !== issue.updated_on) {
-                    if (await isWorkTime(now)) {
-                        checkNotes(currentIssue)
-                    } else if (!getMissedIssuesList().includes(issue)) {
-                        addIssueInOffTime(issue)
-                    }
-                }
+            } else if (currentIssue.status.name !== issue.status.name || currentIssue.updated_on !== issue.updated_on) {
+                await processIssueUpdate(issue, currentIssue, now);
             }
         }
         assignCurrentIssuesList(newIssuesList);
@@ -77,6 +49,30 @@ async function main(): Promise<void> {
     }
 }
 
+async function processNewIssue(issue: Issue, now: number) {
+    if (await isWorkTime(now)) {
+        await notifyNewIssue(issue);
+    } else {
+        addIssueInOffTime(issue);
+    }
+}
+
+async function processIssueUpdate(currentIssue: Issue, issue: Issue, now: number) {
+    const oldStatus = (currentIssue.status as unknown as IssueContent).name;
+    const appointed = (issue.assigned_to as unknown as IssueContent).name;
+
+    if (await isWorkTime(now)) {
+        await notifyStatusUpdate(issue, oldStatus, appointed);
+        if (currentIssue.updated_on !== issue.updated_on) {
+            checkNotes(currentIssue);
+        }
+    } else {
+        if (!getMissedIssuesList().includes(issue)) {
+            addIssueInOffTime(issue);
+        }
+    }
+}
+
 function addIssueInOffTime(issue: Issue) {
     try {
         addMissedIssue(issue);
@@ -84,7 +80,6 @@ function addIssueInOffTime(issue: Issue) {
     } catch (error) {
         console.log(`При добавлении задачи во вне рабочее время произошла ошибка: ${error} ${getCurrentTime()}`);
     }
-
 }
 
 initializeCurrentIssuesList().then(async () => {
@@ -92,5 +87,3 @@ initializeCurrentIssuesList().then(async () => {
     console.log(`Бот запущен ${getCurrentTime()}`);
     await sendMessage(helloMessage);
 });
-
-
