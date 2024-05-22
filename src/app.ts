@@ -8,8 +8,8 @@ import {
     addMissedIssue,
     issuesListRequest,
     getMissedIssuesList,
-    getCurrentIssuesMap,
-    assignCurrentIssuesMap,
+    getOldIssuesMap,
+    assignOldIssuesMap,
     initializeCurrentIssuesList,
 } from "./redmine";
 import {checkNotes, delayedNotifications, notifyNewIssue, notifyStatusUpdate} from "./notifications";
@@ -29,7 +29,7 @@ async function main(): Promise<void> {
 
         const newIssuesMap: Map<number, Issue> = new Map(response.map((issue: Issue) => [issue.id, issue]));
 
-        const oldIssuesMap = getCurrentIssuesMap();
+        const oldIssuesMap = getOldIssuesMap();
 
         console.log(`\nСравнение нового списка с инициализированным ранее ${getCurrentTime()}`);
         // Логирование для отладки
@@ -47,7 +47,7 @@ async function main(): Promise<void> {
                 await processIssueUpdate(oldIssue, newIssue, now);
             }
         }
-        assignCurrentIssuesMap(newIssuesMap);
+        assignOldIssuesMap(newIssuesMap);
     } catch (error) {
         console.error(`Ошибка при получении обновлений из Redmine: ${error} ${getCurrentTime()}`);
     }
@@ -89,6 +89,7 @@ function addIssueInOffTime(issue: Issue) {
     }
 }
 
+// Инициализируем список задач в  без оповещений, затем с интервалом в 1 мин проходимся функцией main
 initializeCurrentIssuesList().then(async () => {
     console.log(`${helloMessage} ${getCurrentTime()}`);
     await sendMessage(helloMessage);

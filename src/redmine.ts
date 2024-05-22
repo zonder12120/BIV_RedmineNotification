@@ -6,15 +6,15 @@ import {getCurrentTime} from "./time";
 const ignored = [71060]; // Игнорим задачу 71060, т.к. обновления по ней нас не волнуют, она создана для ведения учёта остальных задач
 export const issuesListRequest = `${Config.BASE_URL}/issues.json?key=${Config.REDMINE_API_KEY}&status_id!=5`;
 
-let currentIssuesMap: Map<number, Issue>;
+let oldIssuesMap: Map<number, Issue>;
 let missedIssuesList: Issue[] = [];
 
-export function getCurrentIssuesMap() {
-    return currentIssuesMap;
+export function getOldIssuesMap() {
+    return oldIssuesMap;
 }
 
-export function assignCurrentIssuesMap(newIssuesMap: Map<number, Issue>) {
-    currentIssuesMap = newIssuesMap;
+export function assignOldIssuesMap(newIssuesMap: Map<number, Issue>) {
+    oldIssuesMap = newIssuesMap;
 }
 
 export function getMissedIssuesList() {
@@ -36,11 +36,11 @@ export const isIgnore = (issue: Issue) => ignored.includes(issue.id);
 export async function initializeCurrentIssuesList(): Promise<void> {
     try {
         const response = (await axios.get(issuesListRequest)).data.issues;
-        currentIssuesMap = new Map(response.map((issue: Issue) => [issue.id, issue]));
+        oldIssuesMap = new Map(response.map((issue: Issue) => [issue.id, issue]));
 
         console.log(`\nИнициализация списка для сравнения ${getCurrentTime()}`);
         // Логирование для отладки
-        //console.log(currentIssuesMap);
+        //console.log(oldIssuesMap);
     } catch (error) {
         console.error(`Ошибка при инициализации списка задач из Redmine: ${error} ${getCurrentTime()}`);
     }

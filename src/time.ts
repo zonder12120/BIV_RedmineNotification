@@ -2,6 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { Holiday } from "./types";
 import {Config} from "./config";
 
+// Самый корректный календарь, который включает в себя все не рабочие дни, в отличии от других бесплатных аналогов
 const calendarUrl = `https://clients6.google.com/calendar/v3/calendars/en.russian%23holiday@group.v.calendar.google.com/events?calendarId=en.russian%23holiday%40group.v.calendar.google.com&singleEvents=true&eventTypes=default&eventTypes=focusTime&eventTypes=outOfOffice&timeZone=Z&maxAttendees=1&maxResults=250&sanitizeHtml=true&timeMin=${getCurrentYear()}-01-01T00%3A00%3A00Z&timeMax=${getCurrentYear() + 1}-01-01T00%3A00%3A00Z&key=${Config.GOOGLE_CALENDAR_KEY}`;
 
 // Получаем по ссылке JSON с праздниками
