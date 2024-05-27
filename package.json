@@ -1,5 +1,5 @@
 {
-  "name": "biv_redminenotificationbot",
+  "name": "redmine-telegram-notification",
   "version": "1.0.2",
   "description": "",
   "main": "dist/app.js",
