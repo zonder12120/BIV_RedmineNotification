@@ -43,7 +43,7 @@ async function main(): Promise<void> {
                 if (!isIgnore(newIssue)) {
                     await processNewIssue(newIssue, now);
                 }
-            } else if (newIssue.status.name !== oldIssue?.status.name || newIssue.updated_on !== oldIssue?.updated_on) {
+            } else if (!isIgnore(newIssue) && (newIssue.status.name !== oldIssue?.status.name || newIssue.updated_on !== oldIssue?.updated_on)) {
                 await processIssueUpdate(oldIssue, newIssue, now);
             }
         }
