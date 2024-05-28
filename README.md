@@ -36,6 +36,17 @@ cd redmine-telegram-notification
 npm install
 ```
 
+## Setting up Prettier
+
+### Visual Studio Code
+1. Install the Prettier extension (Prettier - Code formatter) from the extensions marketplace.
+2. In Visual Studio Code settings, set Prettier as the default formatter: `File` > `Preferences` > `Settings` > `Text Editor` > `Formatting`.
+
+### WebStorm
+1. In WebStorm settings, follow this path: `Settings` > `Languages & Frameworks` > `JavaScript` > `Prettier`.
+2. Select the `manual configuration` option, and the package path should be automatically detected.
+3. Check the `Run Reformat code action` and `Run on save` options.
+
 ## Configuration
 Create a `.env` file in the root directory of the project with the following environment variables:
 - `TELEGRAM_BOT_TOKEN`: The token for your Telegram bot.
@@ -48,10 +59,10 @@ If you are not from Russia, you can find an API for your country's calendar. I d
 
 Example `.env` file:
 ```dotenv
-TELEGRAM_BOT_TOKEN = your_telegram_bot_token
-CHAT_ID = your_chat_id
-REDMINE_API_KEY = your_redmine_api_key
-BASE_URL = https://redmine.your-company.com
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+CHAT_ID=your_chat_id
+REDMINE_API_KEY=your_redmine_api_key
+BASE_URL=https://redmine.your-company.com
 ```
 **GOOGLE_CALENDAR_KEY** - well-known key for accessing a custom Google calendar, this is present in the `config.ts`. You can use any other API to obtain holiday days, this is done in the file `time.ts`.
 
