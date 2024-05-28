@@ -1,4 +1,4 @@
-# Telegram Redmine Notification Bot
+# Redmine Telegram Notification Bot
 
 ## Project Overview
 Redmine Telegram Notification is a Telegram bot designed to notify users about updates and status changes of issues in Redmine. Developed for personal use, this project can be utilized by others, and feedback is greatly appreciated. <br>
