@@ -8,8 +8,7 @@ const calendarUrl = `https://clients6.google.com/calendar/v3/calendars/en.russia
 // Получаем по ссылке JSON с праздниками
 async function fetchHolidays(): Promise<string[]> {
     try {
-        const response: AxiosResponse<{ items: Holiday[] }> =
-            await axios.get(calendarUrl);
+        const response: AxiosResponse<{ items: Holiday[] }> = await axios.get(calendarUrl);
         const datesList = response.data.items.map((item) => item.start.date);
 
         // Логирование для отладки
@@ -18,9 +17,7 @@ async function fetchHolidays(): Promise<string[]> {
 
         return datesList;
     } catch (error) {
-        console.error(
-            `Ошибка при получении праздников: ${error} ${getCurrentTime()}`
-        );
+        console.error(`Ошибка при получении праздников: ${error} ${getCurrentTime()}`);
         return [];
     }
 }

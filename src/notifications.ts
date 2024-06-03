@@ -1,9 +1,4 @@
-import {
-    clearMissedIssues,
-    getIssueData,
-    getIssueJournals,
-    getMissedIssuesList,
-} from './redmine';
+import { clearMissedIssues, getIssueData, getIssueJournals, getMissedIssuesList } from './redmine';
 import { sendMessage } from './telegram';
 import { Config } from './config';
 import { Issue, IssueContent } from './types';
@@ -16,11 +11,7 @@ export async function delayedNotifications() {
         const index = getMissedIssuesList().indexOf(issue);
         let listingIssuesMsg = '';
         const res = await getIssueData(issue.id);
-        if (
-            res.status.id !== 3 &&
-            res.status.id !== 5 &&
-            !actualList.includes(res.id)
-        ) {
+        if (res.status.id !== 3 && res.status.id !== 5 && !actualList.includes(res.id)) {
             actualList.push(res.id);
         }
 
@@ -32,12 +23,8 @@ export async function delayedNotifications() {
             }
 
             if (actualList.length > 0) {
-                await sendMessage(
-                    `Во вне рабочее время были изменения в ${listingIssuesMsg}`
-                );
-                console.log(
-                    `Во вне рабочее время были изменения в ${listingIssuesMsg}`
-                );
+                await sendMessage(`Во вне рабочее время были изменения в ${listingIssuesMsg}`);
+                console.log(`Во вне рабочее время были изменения в ${listingIssuesMsg}`);
             }
             clearMissedIssues();
         }
@@ -47,9 +34,7 @@ export async function delayedNotifications() {
 // Уведомление о новой задаче
 export async function notifyNewIssue(issue: Issue) {
     const message: string = `${checkTracker(issue.tracker)}Добавлена задача #${issue.id}${
-        issue.assigned_to && issue.assigned_to.name
-            ? ' для ' + issue.assigned_to.name + ' '
-            : ''
+        issue.assigned_to && issue.assigned_to.name ? ' для ' + issue.assigned_to.name + ' ' : ''
     } - ${issue.subject}\n${Config.BASE_URL}/issues/${issue.id}`;
     const status = issue.priority.id;
 
@@ -68,14 +53,13 @@ export async function notifyNewIssue(issue: Issue) {
 }
 
 // Проверяем трекер, если платка, отмечаем символом 💰
-const checkTracker = (tracker: IssueContent) =>
-    tracker.id === 4 ? '\u{1F4B0}' : '';
+const checkTracker = (tracker: IssueContent) => (tracker.id === 4 ? '\u{1F4B0}' : '');
 
 // Оповещение об изменении статуса задачи
 export async function notifyStatusUpdate(
     issue: Issue,
     oldStatus: string,
-    appointed: string | undefined
+    appointed: string | undefined,
 ) {
     const message: string = `${issue.status.id === 2 ? '<u>' : ''}${checkTracker(issue.tracker)}В задаче #${
         issue.id
@@ -91,9 +75,7 @@ export async function notifyStatusUpdate(
 // Оповещение об изменениях в задаче
 export async function notifyIssueUpdate(issue: Issue) {
     const message: string = `${checkTracker(issue.tracker)}Обновление в задаче #${issue.id}${
-        issue.assigned_to && issue.assigned_to.name
-            ? ' (' + issue.assigned_to.name + ') '
-            : ''
+        issue.assigned_to && issue.assigned_to.name ? ' (' + issue.assigned_to.name + ') ' : ''
     }\n${Config.BASE_URL}/issues/${issue.id}`;
     await sendMessage(message);
     console.log(message);
@@ -105,18 +87,9 @@ export function checkNotes(issue: Issue) {
         if (res) {
             const issueWithJournals = res;
 
-            if (
-                issueWithJournals.journals &&
-                issueWithJournals.journals.length > 0
-            ) {
-                const lastComment = issueWithJournals.journals
-                    .sort((a, b) => a.id - b.id)
-                    .pop();
-                if (
-                    lastComment &&
-                    lastComment.notes &&
-                    lastComment.notes.length > 0
-                ) {
+            if (issueWithJournals.journals && issueWithJournals.journals.length > 0) {
+                const lastComment = issueWithJournals.journals.sort((a, b) => a.id - b.id).pop();
+                if (lastComment && lastComment.notes && lastComment.notes.length > 0) {
                     const message: string = `${checkTracker(issue.tracker)}В задаче #${issue.id}${
                         issue.assigned_to && issue.assigned_to.name
                             ? ' (' + issue.assigned_to.name + ') '
