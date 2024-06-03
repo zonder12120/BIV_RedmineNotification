@@ -33,14 +33,12 @@ async function main(): Promise<void> {
         const response = (await axios.get(issuesListRequest)).data.issues;
 
         const newIssuesMap: Map<number, Issue> = new Map(
-            response.map((issue: Issue) => [issue.id, issue])
+            response.map((issue: Issue) => [issue.id, issue]),
         );
 
         const oldIssuesMap = getOldIssuesMap();
 
-        console.log(
-            `\nСравнение нового списка с инициализированным ранее ${getCurrentTime()}`
-        );
+        console.log(`\nСравнение нового списка с инициализированным ранее ${getCurrentTime()}`);
         // Логирование для отладки
         // console.log(newIssuesMap);
 
@@ -61,9 +59,7 @@ async function main(): Promise<void> {
         }
         assignOldIssuesMap(newIssuesMap);
     } catch (error) {
-        console.error(
-            `Ошибка при получении обновлений из Redmine: ${error} ${getCurrentTime()}`
-        );
+        console.error(`Ошибка при получении обновлений из Redmine: ${error} ${getCurrentTime()}`);
     }
 }
 
@@ -75,11 +71,7 @@ async function processNewIssue(issue: Issue, now: number) {
     }
 }
 
-async function processIssueUpdate(
-    oldIssue: Issue,
-    newIssue: Issue,
-    now: number
-) {
+async function processIssueUpdate(oldIssue: Issue, newIssue: Issue, now: number) {
     const oldStatus = oldIssue.status.name;
     const newStatus = newIssue.status.name;
     const appointed = newIssue.assigned_to?.name;
@@ -101,12 +93,10 @@ async function processIssueUpdate(
 function addIssueInOffTime(issue: Issue) {
     try {
         addMissedIssue(issue);
-        console.log(
-            `Во вне рабочее время изменения по задаче: ${issue.id} ${getCurrentTime()}`
-        );
+        console.log(`Во вне рабочее время изменения по задаче: ${issue.id} ${getCurrentTime()}`);
     } catch (error) {
         console.log(
-            `При добавлении задачи во вне рабочее время произошла ошибка: ${error} ${getCurrentTime()}`
+            `При добавлении задачи во вне рабочее время произошла ошибка: ${error} ${getCurrentTime()}`,
         );
     }
 }

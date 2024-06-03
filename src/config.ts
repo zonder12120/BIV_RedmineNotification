@@ -11,15 +11,9 @@ const {
 // BASE_URL - basic url address like https://redmine.your-company.com
 
 // Проверка наличия переменных окружения, при добавлении новых нужно добавлять сюда, если обязательные
-if (
-    !TELEGRAM_BOT_TOKEN ||
-    !CHAT_ID ||
-    !REDMINE_API_KEY ||
-    !BASE_URL ||
-    !GOOGLE_CALENDAR_KEY
-) {
+if (!TELEGRAM_BOT_TOKEN || !CHAT_ID || !REDMINE_API_KEY || !BASE_URL || !GOOGLE_CALENDAR_KEY) {
     throw new Error(
-        'Отсутствуют необходимые переменные окружения. Пожалуйста, убедитесь, что все переменные окружения установлены.'
+        'Отсутствуют необходимые переменные окружения. Пожалуйста, убедитесь, что все переменные окружения установлены.',
     );
 }
 
